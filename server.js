@@ -26,12 +26,29 @@ app.post("/api/friends", function(req, res) {
   friendObject.name = req.body.name;
   friendObject.photo = req.body.photo;
   friendObject.scores = req.body.scores;
+
   let friendsArray = JSON.parse(
     fs.readFileSync("app/data/friends.json", "utf8")
   );
+  let bestFriendSelectionValue = 10000;
+  let bestFriendSelection;
+
+  for (let friend of friendsArray) {
+    let userScore = friend.scores;
+    let totalDifference = 0;
+    for (let i = 0; i < userScore.length; i++) {
+      let diff = Math.abs(friendObject.scores[i] - userScore[i]);
+      totalDifference += diff;
+    }
+    if (totalDifference < bestFriendSelectionValue) {
+      bestFriendSelection = friend;
+      bestFriendSelectionValue = totalDifference;
+    }
+  }
+
   friendsArray.push(friendObject);
   fs.writeFileSync("app/data/friends.json", JSON.stringify(friendsArray));
-  res.send("Friend added!");
+  res.send(bestFriendSelection);
 });
 
 app.listen(3000);
